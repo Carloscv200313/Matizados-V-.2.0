@@ -8,7 +8,7 @@ import { ChevronLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { ProductCard } from "@/components/product-card"
+//import { ProductCard } from "@/components/product-card"
 
 // Productos de ejemplo para el carrito
 const initialCartItems = [
@@ -31,7 +31,7 @@ const initialCartItems = [
 ]
 
 // Productos recomendados
-const recommendedProducts = [
+/*const recommendedProducts = [
   {
     id: "101",
     name: "Cargador Inalámbrico Rápido",
@@ -64,7 +64,7 @@ const recommendedProducts = [
     discount: 35,
     image: "/placeholder.svg?height=200&width=200",
   },
-]
+]*/
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState(initialCartItems)
@@ -211,7 +211,7 @@ export default function CartPage() {
       <section className="mt-16">
         <h2 className="text-2xl font-bold mb-6">Recomendados para ti</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {recommendedProducts.map((product) => (
+          {/*recommendedProducts.map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}
@@ -221,7 +221,7 @@ export default function CartPage() {
               discount={product.discount}
               image={product.image}
             />
-          ))}
+          ))*/}
         </div>
       </section>
     </div>
