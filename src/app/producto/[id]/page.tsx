@@ -472,14 +472,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {relatedProducts.map((product) => (
             <ProductCard
               key={product.id}
-              id={product.id}
-              name={product.name}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discount={product.discount}
-              image={product.image}
-              brand={product.brand}
-              category={product.category}
+              ID_PRODUCTO={product.id}
+              NOMBRE_PRODUCTO={product.name}
+              PRECIO_PRODUCTO={product.price}
+              LOGO_PRODUCTO={product.image}
+              NOMBRE_MARCA={product.brand}
+              NOMBRE_CATEGORIA={product.category}
+              ESTADO_PRODUCTO="Disponible"
+              DESCRIPCION="Descripción breve del producto relacionado."
             />
           ))}
         </div>

@@ -1,9 +1,8 @@
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
+import { redirect } from 'next/navigation'
 import {
   Eye,
   EyeOff,
@@ -29,21 +28,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 interface RegistrationData {
   // Paso 1: Información básica
-  firstName: string
-  lastName: string
-  email: string
-  password: string
-  confirmPassword: string
+  nombre: string
+  apellido: string
+  correo: string
+  contraseña: string
+  confirmContraseña: string
 
   // Paso 2: Información personal
   dni: string
-  phone: string
+  telefono: string
 
   // Paso 3: Dirección
-  address: string
-  city: string
-  state: string
-  zipCode: string
+  direccion: string
+  ciudad: string
+  estado: string
+  codigoPostal: string
 
   // Paso 4: Términos
   acceptTerms: boolean
@@ -60,22 +59,23 @@ const stepDescriptions = [
 ]
 
 export default function RegisterPage() {
+  
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [registrationData, setRegistrationData] = useState<RegistrationData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    nombre: "",
+    apellido: "",
+    correo: "",
+    contraseña: "",
+    confirmContraseña: "",
     dni: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
+    telefono: "",
+    direccion: "",
+    ciudad: "",
+    estado: "",
+    codigoPostal: "",
     acceptTerms: false,
     acceptMarketing: false,
   })
@@ -94,21 +94,21 @@ export default function RegisterPage() {
     switch (step) {
       case 1:
         return !!(
-          registrationData.firstName &&
-          registrationData.lastName &&
-          registrationData.email &&
-          registrationData.password &&
-          registrationData.confirmPassword &&
-          registrationData.password === registrationData.confirmPassword
+          registrationData.nombre &&
+          registrationData.apellido &&
+          registrationData.correo &&
+          registrationData.contraseña &&
+          registrationData.confirmContraseña &&
+          registrationData.contraseña === registrationData.confirmContraseña
         )
       case 2:
-        return !!(registrationData.dni && registrationData.phone)
+        return !!(registrationData.dni && registrationData.telefono)
       case 3:
         return !!(
-          registrationData.address &&
-          registrationData.city &&
-          registrationData.state &&
-          registrationData.zipCode
+          registrationData.direccion &&
+          registrationData.ciudad &&
+          registrationData.estado &&
+          registrationData.codigoPostal
         )
       case 4:
         return registrationData.acceptTerms
@@ -132,12 +132,37 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-
+    const cuerpo = {
+      NOMBRE_USUARIO: registrationData.nombre + " " + registrationData.apellido,
+      CONTRASENA_USUARIO: registrationData.contraseña,
+      DNI_USUARIO: registrationData.dni,
+      CORREO_USUARIO: registrationData.correo,
+      TELEFONO_USUARIO: registrationData.telefono,
+      DIRECCION_DETALLE: registrationData.direccion,
+      DEPARTAMENTO: registrationData.ciudad,
+      DISTRITO: registrationData.estado,
+      CODIGO_POSTAL: registrationData.codigoPostal,
+    }
+    console.log("Datos de registro:", cuerpo)
+    const response = await fetch("http://localhost:3001/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cuerpo),
+    })
+    console.log("Respuesta del servidor:", response)
+    if (!response.ok) {
+      setIsLoading(false)
+      const errorData = await response.json()
+      console.error("Error al registrar:", errorData)
+      alert("Error al registrar la cuenta. Por favor, inténtalo de nuevo.")
+      return
+    }
     // Simulación de registro
     setTimeout(() => {
       setIsLoading(false)
-      console.log("Datos de registro:", registrationData)
-      // Aquí iría la lógica de registro real
+      redirect('/auth/login')
     }, 2000)
   }
 
@@ -226,22 +251,22 @@ export default function RegisterPage() {
                           id="firstName"
                           placeholder="Juan"
                           className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                          value={registrationData.firstName}
-                          onChange={(e) => handleInputChange("firstName", e.target.value)}
+                          value={registrationData.nombre}
+                          onChange={(e) => handleInputChange("nombre", e.target.value)}
                           required
                         />
                       </div>
                     </div>
                     <div className="space-y-2 group">
-                      <Label htmlFor="lastName">Apellido *</Label>
+                      <Label htmlFor="apellido">Apellido *</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-[#3b82f6] transition-colors" />
                         <Input
-                          id="lastName"
+                          id="apellido"
                           placeholder="Pérez"
                           className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                          value={registrationData.lastName}
-                          onChange={(e) => handleInputChange("lastName", e.target.value)}
+                          value={registrationData.apellido}
+                          onChange={(e) => handleInputChange("apellido", e.target.value)}
                           required
                         />
                       </div>
@@ -256,8 +281,8 @@ export default function RegisterPage() {
                         type="email"
                         placeholder="tu@email.com"
                         className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        value={registrationData.correo}
+                        onChange={(e) => handleInputChange("correo", e.target.value)}
                         required
                       />
                     </div>
@@ -271,8 +296,8 @@ export default function RegisterPage() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        value={registrationData.contraseña}
+                        onChange={(e) => handleInputChange("contraseña", e.target.value)}
                         required
                       />
                       <Button
@@ -299,8 +324,8 @@ export default function RegisterPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.confirmPassword}
-                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        value={registrationData.confirmContraseña}
+                        onChange={(e) => handleInputChange("confirmContraseña", e.target.value)}
                         required
                       />
                       <Button
@@ -317,8 +342,8 @@ export default function RegisterPage() {
                         )}
                       </Button>
                     </div>
-                    {registrationData.password !== registrationData.confirmPassword &&
-                      registrationData.confirmPassword && (
+                    {registrationData.contraseña !== registrationData.confirmContraseña &&
+                      registrationData.confirmContraseña && (
                         <p className="text-sm text-red-500 animate-shake">Las contraseñas no coinciden</p>
                       )}
                   </div>
@@ -351,8 +376,8 @@ export default function RegisterPage() {
                         id="phone"
                         placeholder="+51 999 999 999"
                         className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        value={registrationData.telefono}
+                        onChange={(e) => handleInputChange("telefono", e.target.value)}
                         required
                       />
                     </div>
@@ -371,32 +396,32 @@ export default function RegisterPage() {
                         id="address"
                         placeholder="Av. Principal 123"
                         className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.address}
-                        onChange={(e) => handleInputChange("address", e.target.value)}
+                        value={registrationData.direccion}
+                        onChange={(e) => handleInputChange("direccion", e.target.value)}
                         required
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2 group">
-                      <Label htmlFor="city">Ciudad *</Label>
+                      <Label htmlFor="city">Departamento *</Label>
                       <Input
                         id="city"
                         placeholder="Lima"
                         className="transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.city}
-                        onChange={(e) => handleInputChange("city", e.target.value)}
+                        value={registrationData.ciudad}
+                        onChange={(e) => handleInputChange("ciudad", e.target.value)}
                         required
                       />
                     </div>
                     <div className="space-y-2 group">
-                      <Label htmlFor="state">Departamento *</Label>
+                      <Label htmlFor="state">Distrito *</Label>
                       <Input
                         id="state"
                         placeholder="Lima"
                         className="transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                        value={registrationData.state}
-                        onChange={(e) => handleInputChange("state", e.target.value)}
+                        value={registrationData.estado}
+                        onChange={(e) => handleInputChange("estado", e.target.value)}
                         required
                       />
                     </div>
@@ -407,8 +432,8 @@ export default function RegisterPage() {
                       id="zipCode"
                       placeholder="15001"
                       className="transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6]"
-                      value={registrationData.zipCode}
-                      onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                      value={registrationData.codigoPostal}
+                      onChange={(e) => handleInputChange("codigoPostal", e.target.value)}
                       required
                     />
                   </div>
@@ -464,20 +489,20 @@ export default function RegisterPage() {
                     </h3>
                     <div className="space-y-2 text-sm">
                       <p>
-                        <strong>Nombre:</strong> {registrationData.firstName} {registrationData.lastName}
+                        <strong>Nombre:</strong> {registrationData.nombre} {registrationData.apellido}
                       </p>
                       <p>
-                        <strong>Email:</strong> {registrationData.email}
+                        <strong>Email:</strong> {registrationData.correo}
                       </p>
                       <p>
                         <strong>DNI:</strong> {registrationData.dni}
                       </p>
                       <p>
-                        <strong>Teléfono:</strong> {registrationData.phone}
+                        <strong>Teléfono:</strong> {registrationData.telefono}
                       </p>
                       <p>
-                        <strong>Dirección:</strong> {registrationData.address}, {registrationData.city},{" "}
-                        {registrationData.state} {registrationData.zipCode}
+                        <strong>Dirección:</strong> {registrationData.direccion}, {registrationData.ciudad},{" "}
+                        {registrationData.estado} {registrationData.codigoPostal}
                       </p>
                     </div>
                   </div>
@@ -531,85 +556,6 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
       </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up-delayed {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes step-content {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          75% {
-            transform: translateX(5px);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.8s ease-out;
-        }
-
-        .animate-slide-up-delayed {
-          animation: slide-up-delayed 1s ease-out;
-        }
-
-        .animate-step-content {
-          animation: step-content 0.5s ease-out;
-        }
-
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
     </div>
   )
 }

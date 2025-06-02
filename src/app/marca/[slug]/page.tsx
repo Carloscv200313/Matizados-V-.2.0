@@ -1,344 +1,226 @@
 "use client"
-
-import Link from "next/link"
-import Image from "next/image"
-import { ChevronRight, Filter, SlidersHorizontal, Search, Star, Calendar, Package } from "lucide-react"
-
+import { Filter, Search, Calendar, Star, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ProductCard } from "@/components/product-card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { useParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import Image from "next/image"
 
-// Datos de marcas
+interface Product {
+    ID_PRODUCTO: number
+    NOMBRE_PRODUCTO: string
+    NOMBRE_MARCA: string
+    NOMBRE_CATEGORIA: string
+    PRECIO_PRODUCTO: number
+    LOGO_PRODUCTO: string
+    ESTADO_PRODUCTO: string
+    DESCRIPCION: string
+}
+
+const filters = {
+    categories: [
+        { id: "decoraciones", name: "Para decoraciones", match: ["Linea decorativa"] },
+        { id: "vehiculos", name: "Para Vehículos", match: ["Linea vehiculos"] },
+        { id: "madera", name: "Para madera", match: ["Linea madera"] },
+        { id: "industrial", name: "Para industrial", match: ["Linea industrial"] },
+    ],
+    priceRanges: [
+        { id: "0-20", name: "$0 - $20", min: 0, max: 20 },
+        { id: "20-30", name: "$20 - $30", min: 20, max: 30 },
+        { id: "30-40", name: "$30 - $40", min: 30, max: 40 },
+        { id: "40+", name: "Más de $40", min: 40, max: Infinity },
+    ],
+}
+
 const brandsData = {
-    proton: {
-        name: "Proton",
+    cpp: {
+        name: "CPP",
         description: "Líder en pinturas industriales y anticorrosivas desde 1985",
-        logo: "/placeholder.svg?height=120&width=240&text=Proton+Logo",
-        banner: "/placeholder.svg?height=300&width=1200&text=Proton+Banner",
+        logo: "/CPP_LOGO.png",
+        banner: "/CPP_BANER.png",
         founded: 1985,
         rating: 4.8,
         totalProducts: 156,
         specialties: ["Pinturas Industriales", "Anticorrosivos", "Alta Temperatura", "Marinas"],
-        about:
-            "Proton es una marca reconocida mundialmente por su innovación en pinturas industriales. Con más de 35 años de experiencia, ofrecemos soluciones de alta calidad para protección anticorrosiva y aplicaciones industriales exigentes.",
-        products: [
-            {
-                id: "proton-1",
-                name: "Pintura Sintética Proton SyntoRust Negro",
-                price: 29.99,
-                originalPrice: 39.99,
-                discount: 25,
-                image: "/placeholder.svg?height=300&width=300&text=Proton+SyntoRust",
-                brand: "Proton",
-                category: "industrial",
-            },
-            {
-                id: "proton-2",
-                name: "Anticorrosivo Base Agua",
-                price: 24.99,
-                originalPrice: 34.99,
-                discount: 28,
-                image: "/placeholder.svg?height=300&width=300&text=Anticorrosivo",
-                brand: "Proton",
-                category: "industrial",
-            },
-            {
-                id: "proton-3",
-                name: "Esmalte Sintético Brillante",
-                price: 28.99,
-                originalPrice: 36.99,
-                discount: 22,
-                image: "/placeholder.svg?height=300&width=300&text=Esmalte+Sintético",
-                brand: "Proton",
-                category: "decoraciones",
-            },
-            {
-                id: "proton-4",
-                name: "Imprimante para Metal",
-                price: 19.99,
-                originalPrice: 26.99,
-                discount: 26,
-                image: "/placeholder.svg?height=300&width=300&text=Imprimante+Metal",
-                brand: "Proton",
-                category: "industrial",
-            },
-        ],
+        about: "CPP es una marca reconocida mundialmente por su innovación en pinturas industriales. Con más de 35 años de experiencia, ofrecemos soluciones de alta calidad para protección anticorrosiva y aplicaciones industriales exigentes.",
     },
-    saturno: {
-        name: "Saturno",
+    anypsa: {
+        name: "ANYPSA",
         description: "Especialistas en pinturas decorativas y arquitectónicas de alta calidad",
-        logo: "/placeholder.svg?height=120&width=240&text=Saturno+Logo",
-        banner: "/placeholder.svg?height=300&width=1200&text=Saturno+Banner",
+        logo: "/ANYPSA_LOGO.png",
+        banner: "/ANYPSA_BANNER.jpg",
         founded: 1992,
         rating: 4.7,
         totalProducts: 203,
         specialties: ["Pinturas Decorativas", "Látex", "Acrílicas", "Efectos Especiales"],
-        about:
-            "Saturno se especializa en crear ambientes únicos con sus pinturas decorativas. Nuestra gama de productos incluye desde látex tradicionales hasta efectos especiales que transforman cualquier espacio.",
-        products: [
-            {
-                id: "saturno-1",
-                name: "Pintura Látex Premium Satinado Blanco",
-                price: 24.99,
-                originalPrice: 32.99,
-                discount: 24,
-                image: "/placeholder.svg?height=300&width=300&text=Látex+Premium",
-                brand: "Saturno",
-                category: "decoraciones",
-            },
-            {
-                id: "saturno-2",
-                name: "Pintura Acrílica Interior Lavable",
-                price: 22.99,
-                originalPrice: 29.99,
-                discount: 23,
-                image: "/placeholder.svg?height=300&width=300&text=Acrílica+Interior",
-                brand: "Saturno",
-                category: "decoraciones",
-            },
-            {
-                id: "saturno-3",
-                name: "Pintura Antihumedad Blanca",
-                price: 31.99,
-                originalPrice: 39.99,
-                discount: 20,
-                image: "/placeholder.svg?height=300&width=300&text=Antihumedad",
-                brand: "Saturno",
-                category: "decoraciones",
-            },
-            {
-                id: "saturno-4",
-                name: "Pintura Efecto Texturizado",
-                price: 35.99,
-                originalPrice: 45.99,
-                discount: 22,
-                image: "/placeholder.svg?height=300&width=300&text=Texturizado",
-                brand: "Saturno",
-                category: "decoraciones",
-            },
-        ],
+        about: "ANYPSA se especializa en crear ambientes únicos con sus pinturas decorativas. Nuestra gama de productos incluye desde látex tradicionales hasta efectos especiales que transforman cualquier espacio.",
     },
-    colorcar: {
-        name: "ColorCar",
+    "3t": {
+        name: "3T",
         description: "La marca líder en pinturas automotrices y acabados vehiculares",
-        logo: "/placeholder.svg?height=120&width=240&text=ColorCar+Logo",
-        banner: "/placeholder.svg?height=300&width=1200&text=ColorCar+Banner",
+        logo: "/3T_LOGO.png",
+        banner: "/3T_LOGO.png",
         founded: 1998,
         rating: 4.9,
         totalProducts: 89,
         specialties: ["Pinturas Automotrices", "Barnices", "Bases", "Acabados Metálicos"],
-        about:
-            "ColorCar es la marca de confianza para profesionales del sector automotriz. Ofrecemos una gama completa de productos para pintura vehicular con tecnología de punta y colores de fábrica.",
-        products: [
-            {
-                id: "colorcar-1",
-                name: "Esmalte Automotriz Azul Metálico",
-                price: 34.99,
-                originalPrice: 44.99,
-                discount: 22,
-                image: "/placeholder.svg?height=300&width=300&text=Esmalte+Automotriz",
-                brand: "ColorCar",
-                category: "vehiculos",
-            },
-            {
-                id: "colorcar-2",
-                name: "Base Automotriz Gris Claro",
-                price: 26.99,
-                originalPrice: 34.99,
-                discount: 23,
-                image: "/placeholder.svg?height=300&width=300&text=Base+Automotriz",
-                brand: "ColorCar",
-                category: "vehiculos",
-            },
-            {
-                id: "colorcar-3",
-                name: "Barniz Automotriz UV",
-                price: 29.99,
-                originalPrice: 38.99,
-                discount: 23,
-                image: "/placeholder.svg?height=300&width=300&text=Barniz+UV",
-                brand: "ColorCar",
-                category: "vehiculos",
-            },
-            {
-                id: "colorcar-4",
-                name: "Imprimante Automotriz",
-                price: 24.99,
-                originalPrice: 31.99,
-                discount: 22,
-                image: "/placeholder.svg?height=300&width=300&text=Imprimante",
-                brand: "ColorCar",
-                category: "vehiculos",
-            },
-        ],
+        about: "3T es la marca de confianza para profesionales del sector automotriz. Ofrecemos una gama completa de productos para pintura vehicular con tecnología de punta y colores de fábrica.",
     },
-    woodprotect: {
-        name: "WoodProtect",
+    losaro: {
+        name: "Losaro",
         description: "Expertos en protección y embellecimiento de madera",
-        logo: "/placeholder.svg?height=120&width=240&text=WoodProtect+Logo",
-        banner: "/placeholder.svg?height=300&width=1200&text=WoodProtect+Banner",
+        logo: "/LOZARO_LOGO.png",
+        banner: "/LOZARO_BANER.jpg",
         founded: 2001,
         rating: 4.6,
         totalProducts: 67,
         specialties: ["Barnices", "Tintes", "Lacas", "Protectores UV"],
-        about:
-            "WoodProtect se dedica exclusivamente al cuidado y protección de la madera. Nuestros productos están formulados para realzar la belleza natural de la madera mientras la protegen de los elementos.",
-        products: [
-            {
-                id: "woodprotect-1",
-                name: "Barniz Marino Protector UV",
-                price: 27.99,
-                originalPrice: 36.99,
-                discount: 24,
-                image: "/placeholder.svg?height=300&width=300&text=Barniz+Marino",
-                brand: "WoodProtect",
-                category: "madera",
-            },
-            {
-                id: "woodprotect-2",
-                name: "Tinte para Madera Caoba",
-                price: 18.99,
-                originalPrice: 24.99,
-                discount: 24,
-                image: "/placeholder.svg?height=300&width=300&text=Tinte+Madera",
-                brand: "WoodProtect",
-                category: "madera",
-            },
-            {
-                id: "woodprotect-3",
-                name: "Laca Nitrocelulósica Brillante",
-                price: 32.99,
-                originalPrice: 42.99,
-                discount: 23,
-                image: "/placeholder.svg?height=300&width=300&text=Laca+Nitro",
-                brand: "WoodProtect",
-                category: "madera",
-            },
-            {
-                id: "woodprotect-4",
-                name: "Sellador para Madera",
-                price: 21.99,
-                originalPrice: 28.99,
-                discount: 24,
-                image: "/placeholder.svg?height=300&width=300&text=Sellador",
-                brand: "WoodProtect",
-                category: "madera",
-            },
-        ],
-    },
-    induspaint: {
-        name: "IndusPaint",
-        description: "Soluciones avanzadas para la industria moderna",
-        logo: "/placeholder.svg?height=120&width=240&text=IndusPaint+Logo",
-        banner: "/placeholder.svg?height=300&width=1200&text=IndusPaint+Banner",
-        founded: 2005,
-        rating: 4.7,
-        totalProducts: 94,
-        specialties: ["Epóxicos", "Pisos Industriales", "Recubrimientos", "Señalización"],
-        about:
-            "IndusPaint desarrolla recubrimientos especializados para aplicaciones industriales exigentes. Nuestros productos están diseñados para ofrecer máxima durabilidad y resistencia en entornos industriales.",
-        products: [
-            {
-                id: "induspaint-1",
-                name: "Pintura Epóxica para Pisos Gris",
-                price: 39.99,
-                originalPrice: 49.99,
-                discount: 20,
-                image: "/placeholder.svg?height=300&width=300&text=Epóxica+Pisos",
-                brand: "IndusPaint",
-                category: "industrial",
-            },
-            {
-                id: "induspaint-2",
-                name: "Esmalte Industrial Alta Temperatura",
-                price: 32.99,
-                originalPrice: 42.99,
-                discount: 23,
-                image: "/placeholder.svg?height=300&width=300&text=Esmalte+Industrial",
-                brand: "IndusPaint",
-                category: "industrial",
-            },
-            {
-                id: "induspaint-3",
-                name: "Recubrimiento Epóxico Transparente",
-                price: 45.99,
-                originalPrice: 59.99,
-                discount: 23,
-                image: "/placeholder.svg?height=300&width=300&text=Epóxico+Transparente",
-                brand: "IndusPaint",
-                category: "industrial",
-            },
-            {
-                id: "induspaint-4",
-                name: "Pintura de Señalización Amarilla",
-                price: 28.99,
-                originalPrice: 36.99,
-                discount: 22,
-                image: "/placeholder.svg?height=300&width=300&text=Señalización",
-                brand: "IndusPaint",
-                category: "industrial",
-            },
-        ],
-    },
+        about: "Losaro se dedica exclusivamente al cuidado y protección de la madera. Nuestros productos están formulados para realzar la belleza natural de la madera mientras la protegen de los elementos.",
+    }
 }
 
-// Filtros disponibles
-const filters = {
-    categories: [
-        { id: "decoraciones", name: "Para decoraciones" },
-        { id: "vehiculos", name: "Para Vehículos" },
-        { id: "madera", name: "Para madera" },
-        { id: "industrial", name: "Para industrial" },
-    ],
-    priceRanges: [
-        { id: "0-20", name: "$0 - $20" },
-        { id: "20-30", name: "$20 - $30" },
-        { id: "30-40", name: "$30 - $40" },
-        { id: "40+", name: "Más de $40" },
-    ],
-}
+export default function BrandPage() {
+    const params = useParams()
+    const slug = params?.slug as keyof typeof brandsData
+    const [productos, setProductos] = useState<Product[]>([])
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([])
 
-export default function BrandPage({ params }: { params: { slug: string } }) {
-    const brand = brandsData[params.slug as keyof typeof brandsData]
+    // Obtener datos de la marca
+    const brand = brandsData[slug] || {
+        name: slug.toUpperCase(),
+        description: `Productos de la marca ${slug.toUpperCase()}`,
+        logo: "/placeholder.svg",
+        banner: "/placeholder.svg",
+        founded: 2000,
+        rating: 4.5,
+        totalProducts: 0,
+        specialties: [],
+        about: ""
+    }
 
-    if (!brand) {
-        return (
-            <div className="container px-4 py-8 text-center">
-                <h1 className="text-2xl font-bold mb-4">Marca no encontrada</h1>
-                <p className="text-muted-foreground mb-6">La marca que buscas no existe.</p>
-                <Button asChild>
-                    <Link href="/productos">Ver todos los productos</Link>
-                </Button>
-            </div>
+    // Obtener productos de la marca
+    useEffect(() => {
+        const ObtenerProductosMarca = async () => {
+            try {
+                setLoading(true)
+                setError(null)
+                
+                const brandIdMap: Record<string, number> = {
+                    cpp: 1,
+                    anypsa: 2,
+                    "3t": 3,
+                    losaro: 4
+                }
+                
+                const brandId = brandIdMap[slug] || 1
+                const response = await fetch(`http://localhost:3001/api/productos/listarProductosMarca/${brandId}`)
+                
+                if (!response.ok) {
+                    throw new Error('Error al obtener los productos de la marca')
+                }
+                
+                const data = await response.json()
+                setProductos(data)
+                setFilteredProducts(data)
+            } catch (error) {
+                console.error('Error fetching brand products:', error)
+                setError('No se pudieron cargar los productos. Intente nuevamente más tarde.')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        ObtenerProductosMarca()
+    }, [slug])
+
+    // Aplicar filtros
+    useEffect(() => {
+        let results = [...productos]
+
+        // Filtro por búsqueda
+        if (searchTerm) {
+            results = results.filter(product =>
+                product.NOMBRE_PRODUCTO.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.DESCRIPCION.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.NOMBRE_CATEGORIA.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+        }
+
+        // Filtro por categorías
+        if (selectedCategories.length > 0) {
+            results = results.filter(product => {
+                return selectedCategories.some(categoryId => {
+                    const categoryFilter = filters.categories.find(c => c.id === categoryId)
+                    if (!categoryFilter) return false
+                    
+                    return categoryFilter.match.some(matchTerm =>
+                        product.NOMBRE_CATEGORIA.toLowerCase().includes(matchTerm.toLowerCase())
+                    )
+                })
+            })
+        }
+
+        // Filtro por rango de precios
+        if (selectedPriceRanges.length > 0) {
+            results = results.filter(product => {
+                return selectedPriceRanges.some(rangeId => {
+                    const range = filters.priceRanges.find(r => r.id === rangeId)
+                    if (!range) return false
+                    return product.PRECIO_PRODUCTO >= range.min && product.PRECIO_PRODUCTO <= range.max
+                })
+            })
+        }
+
+        setFilteredProducts(results)
+    }, [searchTerm, selectedCategories, selectedPriceRanges, productos])
+
+    // Manejar cambio de categorías
+    const handleCategoryChange = (categoryId: string) => {
+        setSelectedCategories(prev =>
+            prev.includes(categoryId)
+                ? prev.filter(id => id !== categoryId)
+                : [...prev, categoryId]
         )
     }
 
-    return (
-        <div className="container px-4 py-6 md:px-6 md:py-8">
-            {/* Breadcrumbs */}
-            <nav className="flex items-center text-sm mb-6">
-                <Link href="/" className="text-muted-foreground hover:text-foreground">
-                    Inicio
-                </Link>
-                <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
-                <Link href="/productos" className="text-muted-foreground hover:text-foreground">
-                    Productos
-                </Link>
-                <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
-                <span className="font-medium">{brand.name}</span>
-            </nav>
+    // Manejar cambio de rangos de precio
+    const handlePriceRangeChange = (rangeId: string) => {
+        setSelectedPriceRanges(prev =>
+            prev.includes(rangeId)
+                ? prev.filter(id => id !== rangeId)
+                : [...prev, rangeId]
+        )
+    }
 
-            {/* Brand Banner */}
-            <div className="relative rounded-lg overflow-hidden mb-8 animate-fade-in">
+    // Resetear todos los filtros
+    const resetFilters = () => {
+        setSearchTerm("")
+        setSelectedCategories([])
+        setSelectedPriceRanges([])
+    }
+
+    return (
+        <div className="flex flex-col px-4 py-6 md:px-6 md:py-8">
+            {/* Banner de marca */}
+            <div className="relative rounded-lg overflow-hidden mb-8 animate-fade-in h-64 md:h-80">
                 <div className="absolute inset-0 z-0">
-                    <Image src={brand.banner || "/placeholder.svg"} alt={brand.name} fill className="object-cover" />
+                    <Image 
+                        src={brand.banner} 
+                        alt={brand.name} 
+                        fill 
+                        className="object-cover"
+                        priority
+                    />
                     <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
                 </div>
 
@@ -346,7 +228,7 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                     <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                             <Image
-                                src={brand.logo || "/placeholder.svg"}
+                                src={brand.logo}
                                 alt={brand.name}
                                 width={240}
                                 height={120}
@@ -358,7 +240,7 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                             <p className="text-lg text-gray-200 mb-4">{brand.description}</p>
                             <div className="flex flex-wrap gap-2 mb-4">
                                 {brand.specialties.map((specialty, index) => (
-                                    <Badge key={index} variant="secondary" className="bg-white/20 text-white border-white/30">
+                                    <Badge key={index} variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
                                         {specialty}
                                     </Badge>
                                 ))}
@@ -382,18 +264,6 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                 </div>
             </div>
 
-            {/* Brand Info */}
-            <div className="mb-8">
-                <Card className="card-ferreteria">
-                    <CardContent className="p-6">
-                        <h2 className="text-xl font-bold mb-4 text-[#1d4ed8] dark:text-[#bfdbfe]">
-                            Acerca de {brand.name}
-                        </h2>
-                        <p className="text-muted-foreground leading-relaxed">{brand.about}</p>
-                    </CardContent>
-                </Card>
-            </div>
-
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Sidebar Filters - Desktop */}
                 <div className="hidden md:block w-64 flex-shrink-0">
@@ -415,6 +285,8 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                                                 <Checkbox
                                                     id={`category-${category.id}`}
                                                     className="data-[state=checked]:bg-[#1d4ed8] data-[state=checked]:border-[#1d4ed8]"
+                                                    checked={selectedCategories.includes(category.id)}
+                                                    onCheckedChange={() => handleCategoryChange(category.id)}
                                                 />
                                                 <Label htmlFor={`category-${category.id}`} className="text-sm cursor-pointer">
                                                     {category.name}
@@ -423,31 +295,7 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                                         ))}
                                     </div>
                                 </div>
-
                                 <Separator />
-
-                                {/* Especialidades */}
-                                <div>
-                                    <h3 className="font-medium mb-3 text-[#1d4ed8] dark:text-[#bfdbfe]">
-                                        Especialidades
-                                    </h3>
-                                    <div className="space-y-2">
-                                        {brand.specialties.map((specialty, index) => (
-                                            <div key={index} className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id={`specialty-${index}`}
-                                                    className="data-[state=checked]:bg-ferreteria-orange-500 data-[state=checked]:border-ferreteria-orange-500"
-                                                />
-                                                <Label htmlFor={`specialty-${index}`} className="text-sm cursor-pointer">
-                                                    {specialty}
-                                                </Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <Separator />
-
                                 {/* Rango de Precios */}
                                 <div>
                                     <h3 className="font-medium mb-3 text-[#1d4ed8] dark:text-[#bfdbfe]">Precio</h3>
@@ -457,6 +305,8 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                                                 <Checkbox
                                                     id={`price-${range.id}`}
                                                     className="data-[state=checked]:bg-[#1d4ed8] data-[state=checked]:border-[#1d4ed8]"
+                                                    checked={selectedPriceRanges.includes(range.id)}
+                                                    onCheckedChange={() => handlePriceRangeChange(range.id)}
                                                 />
                                                 <Label htmlFor={`price-${range.id}`} className="text-sm cursor-pointer">
                                                     {range.name}
@@ -466,7 +316,12 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                                     </div>
                                 </div>
 
-                                <Button className="w-full btn-ferreteria">Aplicar Filtros</Button>
+                                <Button 
+                                    className="w-full btn-ferreteria"
+                                    onClick={resetFilters}
+                                >
+                                    Limpiar Filtros
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -478,7 +333,9 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <div>
                             <h2 className="text-2xl font-bold">Productos de {brand.name}</h2>
-                            <p className="text-muted-foreground">Mostrando {brand.products.length} productos</p>
+                            <p className="text-muted-foreground">
+                                Mostrando {filteredProducts.length} de {productos.length} productos
+                            </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                             <div className="relative w-full sm:w-64">
@@ -486,112 +343,65 @@ export default function BrandPage({ params }: { params: { slug: string } }) {
                                     type="search"
                                     placeholder={`Buscar en ${brand.name}...`}
                                     className="w-full pl-4 pr-10 focus-visible:ring-[#1d4ed8]"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                                 <Button variant="ghost" size="icon" className="absolute right-0 top-0 h-full">
                                     <Search className="h-4 w-4" />
                                     <span className="sr-only">Buscar</span>
                                 </Button>
                             </div>
-                            <Select defaultValue="featured">
-                                <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder="Ordenar por" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="featured">Destacados</SelectItem>
-                                    <SelectItem value="price-low">Precio: Menor a Mayor</SelectItem>
-                                    <SelectItem value="price-high">Precio: Mayor a Menor</SelectItem>
-                                    <SelectItem value="newest">Más recientes</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {/* Mobile Filter Button */}
-                            <Sheet>
-                                <SheetTrigger asChild>
-                                    <Button variant="outline" className="md:hidden w-full">
-                                        <SlidersHorizontal className="h-4 w-4 mr-2" />
-                                        Filtros
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                                    <div className="py-4 space-y-6">
-                                        {/* Mobile filters content */}
-                                        <div>
-                                            <h3 className="font-medium mb-3">Categorías</h3>
-                                            <div className="space-y-2">
-                                                {filters.categories.map((category) => (
-                                                    <div key={category.id} className="flex items-center space-x-2">
-                                                        <Checkbox id={`mobile-category-${category.id}`} />
-                                                        <Label htmlFor={`mobile-category-${category.id}`} className="text-sm">
-                                                            {category.name}
-                                                        </Label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </SheetContent>
-                            </Sheet>
                         </div>
                     </div>
 
                     {/* Products Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up">
-                        {brand.products.map((product) => (
-                            <div key={product.id} className="product-hover">
-                                <ProductCard
-                                    id={product.id}
-                                    name={product.name}
-                                    price={product.price}
-                                    originalPrice={product.originalPrice}
-                                    discount={product.discount}
-                                    image={product.image}
-                                    brand={product.brand}
-                                    category={product.category}
-                                />
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Load More */}
-                    <div className="text-center mt-12">
-                        <Button variant="outline" size="lg" className="btn-ferreteria">
-                            Ver todos los productos de {brand.name}
-                        </Button>
-                    </div>
+                    {loading ? (
+                        <div className="flex justify-center items-center h-64">
+                            <p>Cargando productos...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12">
+                            <p className="text-red-500">{error}</p>
+                            <Button 
+                                onClick={() => window.location.reload()}
+                                className="mt-4"
+                            >
+                                Reintentar
+                            </Button>
+                        </div>
+                    ) : filteredProducts.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up">
+                            {filteredProducts.map((product) => (
+                                <div key={product.ID_PRODUCTO} className="product-hover">
+                                    <ProductCard
+                                        ID_PRODUCTO={product.ID_PRODUCTO}
+                                        NOMBRE_PRODUCTO={product.NOMBRE_PRODUCTO}
+                                        PRECIO_PRODUCTO={product.PRECIO_PRODUCTO}
+                                        LOGO_PRODUCTO={product.LOGO_PRODUCTO}
+                                        NOMBRE_MARCA={product.NOMBRE_MARCA}
+                                        NOMBRE_CATEGORIA={product.NOMBRE_CATEGORIA}
+                                        ESTADO_PRODUCTO={product.ESTADO_PRODUCTO}
+                                        DESCRIPCION={product.DESCRIPCION}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="col-span-full text-center py-12">
+                            <p className="text-lg text-muted-foreground">
+                                No se encontraron productos con los filtros seleccionados
+                            </p>
+                            <Button
+                                variant="link"
+                                className="mt-4"
+                                onClick={resetFilters}
+                            >
+                                Limpiar filtros
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
-
-            <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.8s ease-out;
-        }
-      `}</style>
         </div>
     )
 }

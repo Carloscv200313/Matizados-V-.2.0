@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronRight, Droplet, Palette, Truck, Users } from "lucide-react"
+import { Droplet, Palette, Truck, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,15 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function ServiciosPage() {
   return (
     <div className="flex flex-col  px-4 py-6 md:px-6 md:py-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm mb-6">
-        <Link href="/" className="text-muted-foreground hover:text-foreground">
-          Inicio
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
-        <span className="font-medium">Servicios</span>
-      </nav>
-
       {/* Hero Section */}
       <div className="relative rounded-lg overflow-hidden mb-12">
         <div className="absolute inset-0 z-0">
@@ -427,7 +418,7 @@ export default function ServiciosPage() {
       </section>
 
       {/* CTA */}
-      <section className="dark:bg-neutral-200 bg-neutral-800 text-primary-foreground rounded-lg p-8 md:p-12 text-center">
+      <section className="dark:bg-neutral-500 bg-neutral-800 text-primary-foreground rounded-lg p-8 md:p-12 text-center">
         <h2 className="text-3xl font-bold mb-4">¿Listo para transformar tu proyecto?</h2>
         <p className="text-lg mb-8 max-w-2xl mx-auto">
           Contáctanos hoy mismo para obtener una cotización personalizada o programar una consulta con nuestros expertos

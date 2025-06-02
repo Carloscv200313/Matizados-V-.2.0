@@ -1,12 +1,38 @@
+"use client"
 import Link from "next/link"
-
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/product-card"
 import { PromoBanner } from "@/components/promo-banner"
 import { FeaturedBrands } from "@/components/featured-brands"
 import { ColorPalette } from "@/components/color-palette"
-
+import { useEffect, useState } from "react"
+interface Product {
+  ID_PRODUCTO: number
+  NOMBRE_PRODUCTO: string
+  NOMBRE_MARCA: string
+  NOMBRE_CATEGORIA: string
+  PRECIO_PRODUCTO: number
+  LOGO_PRODUCTO: string
+  ESTADO_PRODUCTO: string
+  DESCRIPCION: string
+}
 export default function Home() {
+  const [productos, setProductos] = useState<Product[]>([])
+  useEffect(() => {
+    const ObtenerProductos = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/productos/listarProductos')
+        if (!response.ok) {
+          throw new Error('Error al obtener los productos')
+        }
+        const data = await response.json()
+        setProductos(data)
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      }
+    }
+    ObtenerProductos()
+  }, [])
   return (
     <div className="flex min-h-screen flex-col">
       <PromoBanner />
@@ -46,58 +72,17 @@ export default function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            {
-              id: "1",
-              name: "Pintura Sintética Proton SyntoRust Negro",
-              price: 29.99,
-              originalPrice: 39.99,
-              discount: 25,
-              image: "/placeholder.svg?height=300&width=300&text=Proton+SyntoRust",
-              brand: "Proton",
-              category: "industrial",
-            },
-            {
-              id: "2",
-              name: "Pintura Látex Premium Satinado Blanco",
-              price: 24.99,
-              originalPrice: 32.99,
-              discount: 24,
-              image: "/placeholder.svg?height=300&width=300&text=Látex+Premium",
-              brand: "Saturno",
-              category: "decoraciones",
-            },
-            {
-              id: "3",
-              name: "Esmalte Automotriz Azul Metálico",
-              price: 34.99,
-              originalPrice: 44.99,
-              discount: 22,
-              image: "/placeholder.svg?height=300&width=300&text=Esmalte+Automotriz",
-              brand: "ColorCar",
-              category: "vehiculos",
-            },
-            {
-              id: "4",
-              name: "Barniz Marino Protector UV",
-              price: 27.99,
-              originalPrice: 36.99,
-              discount: 24,
-              image: "/placeholder.svg?height=300&width=300&text=Barniz+Marino",
-              brand: "WoodProtect",
-              category: "madera",
-            },
-          ].map((product) => (
-            <div key={product.id} className="product-hover">
+          {productos.slice(0, 4).map((product) => (
+            <div key={product.ID_PRODUCTO} className="product-hover">
               <ProductCard
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                discount={product.discount}
-                image={product.image}
-                brand={product.brand}
-                category={product.category}
+                ID_PRODUCTO={product.ID_PRODUCTO}
+                NOMBRE_PRODUCTO={product.NOMBRE_PRODUCTO}
+                PRECIO_PRODUCTO={product.PRECIO_PRODUCTO}
+                LOGO_PRODUCTO={product.LOGO_PRODUCTO}
+                NOMBRE_MARCA={product.NOMBRE_MARCA}
+                NOMBRE_CATEGORIA={product.NOMBRE_CATEGORIA}
+                ESTADO_PRODUCTO="Disponible"
+                DESCRIPCION={`Producto destacado: ${product.NOMBRE_PRODUCTO}`}
               />
             </div>
           ))}

@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { DataUserProvider } from "@/Provider/Provider.User"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,11 +22,13 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
+        <DataUserProvider>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <Header />
           {children}
           <Footer />
         </ThemeProvider>
+        </DataUserProvider>
       </body>
     </html>
   )

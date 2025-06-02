@@ -1,10 +1,7 @@
 "use client"
-
 import type React from "react"
-
 import { useState } from "react"
-import Link from "next/link"
-import { ChevronRight, Mail, MapPin, Phone, Send } from "lucide-react"
+import { Mail, MapPin, Phone, Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,15 +52,6 @@ export default function ContactPage() {
 
   return (
     <div className="flex flex-col px-4 py-6 md:px-6 md:py-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm mb-6">
-        <Link href="/" className="text-muted-foreground hover:text-foreground">
-          Inicio
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
-        <span className="font-medium">Contáctanos</span>
-      </nav>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Contact Form */}
         <div>

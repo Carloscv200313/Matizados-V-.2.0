@@ -1,36 +1,46 @@
 "use client"
-
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react"
 import { motion } from "framer-motion"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
+import { useDataUser } from "@/Provider/Provider.User"
+import { redirect } from 'next/navigation'
 export default function LoginPage() {
+  const {setUser} = useDataUser()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    CORREO_USUARIO: "",
+    CONTRASENA_USUARIO: "",
     remember: false,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    console.log("Login:", formData)
+    const response = await fetch("http://localhost:3001/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+    const data = await response.json()
+    console.log("Response:", data.datos)
     // Simulación de carga
     setTimeout(() => {
+      setUser(data.datos)
+      //localStorage.setItem("user", JSON.stringify(data.datos))
       setIsLoading(false)
-      console.log("Login:", formData)
+      redirect('/')
     }, 1500)
-  }
-
+}
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
@@ -63,7 +73,7 @@ export default function LoginPage() {
               <CardDescription className="text-center">Ingresa tus credenciales para continuar</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email Field */}
                 <div className="space-y-2 group">
                   <Label htmlFor="email" className="text-sm font-medium">
@@ -76,8 +86,8 @@ export default function LoginPage() {
                       type="email"
                       placeholder="tu@email.com"
                       className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6] focus:border-[#3b82f6]"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      value={formData.CORREO_USUARIO}
+                      onChange={(e) => handleInputChange("CORREO_USUARIO", e.target.value)}
                       required
                     />
                   </div>
@@ -89,12 +99,6 @@ export default function LoginPage() {
                     <Label htmlFor="password" className="text-sm font-medium">
                       Contraseña
                     </Label>
-                    <Link
-                      href="/auth/recuperar"
-                      className="text-xs text-[#2563eb] dark:text-[#93c5fd] hover:text-[#f97316] transition-colors"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </Link>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-[#3b82f6] transition-colors" />
@@ -103,8 +107,8 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-[#3b82f6] focus:border-[#3b82f6]"
-                      value={formData.password}
-                      onChange={(e) => handleInputChange("password", e.target.value)}
+                      value={formData.CONTRASENA_USUARIO}
+                      onChange={(e) => handleInputChange("CONTRASENA_USUARIO", e.target.value)}
                       required
                     />
                     <Button
@@ -121,19 +125,6 @@ export default function LoginPage() {
                       )}
                     </Button>
                   </div>
-                </div>
-
-                {/* Remember Me */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={formData.remember}
-                    onCheckedChange={(checked) => handleInputChange("remember", checked as boolean)}
-                    className="data-[state=checked]:bg-[#3b82f6] data-[state=checked]:border-[#3b82f6]"
-                  />
-                  <Label htmlFor="remember" className="text-sm cursor-pointer">
-                    Recordar mi sesión
-                  </Label>
                 </div>
 
                 {/* Submit Button */}

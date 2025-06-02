@@ -1,11 +1,6 @@
 "use client"
-
-import Link from "next/link"
-
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
 export function ColorPalette() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedCategory, setSelectedCategory] = useState("decoraciones")
@@ -84,11 +79,6 @@ export function ColorPalette() {
                     <span className="text-xs text-muted-foreground">{color.hex}</span>
                   </div>
                 ))}
-              </div>
-              <div className="mt-6 text-center">
-                <Button asChild>
-                  <Link href={`/colores/${category}`}>Ver todos los colores</Link>
-                </Button>
               </div>
             </TabsContent>
           ))}

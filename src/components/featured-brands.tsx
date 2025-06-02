@@ -3,17 +3,16 @@ import Image from "next/image"
 
 export function FeaturedBrands() {
   const brands = [
-    { name: "Proton", logo: "/placeholder.svg?height=80&width=160&text=Proton", href: "/marca/proton" },
-    { name: "Saturno", logo: "/placeholder.svg?height=80&width=160&text=Saturno", href: "/marca/saturno" },
-    { name: "ColorCar", logo: "/placeholder.svg?height=80&width=160&text=ColorCar", href: "/marca/colorcar" },
-    { name: "WoodProtect", logo: "/placeholder.svg?height=80&width=160&text=WoodProtect", href: "/marca/woodprotect" },
-    { name: "IndusPaint", logo: "/placeholder.svg?height=80&width=160&text=IndusPaint", href: "/marca/induspaint" },
+    { name: "CPP", logo: "/CPP_LOGO.png", href: "/marca/cpp" },
+    { name: "ANYPSA", logo: "/ANYPSA_LOGO.png", href: "/marca/anypsa" },
+    { name: "3T", logo: "/3T_LOGO.png", href: "/marca/3t" },
+    { name: "LOZARO", logo: "/LOZARO_LOGO.png", href: "/marca/losaro" },
   ]
-
+  
   return (
     <section className="flex flex-col px-4 py-12 md:px-6">
       <h2 className="text-2xl font-bold mb-8 text-center">Nuestras Marcas</h2>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {brands.map((brand, index) => (
           <Link
             key={index}
@@ -23,9 +22,9 @@ export function FeaturedBrands() {
             <Image
               src={brand.logo || "/placeholder.svg"}
               alt={brand.name}
-              width={160}
-              height={80}
-              className="max-h-12 w-auto"
+              width={500}
+              height={300}
+              className="object-contain h-20 w-auto"
             />
           </Link>
         ))}
