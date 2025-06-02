@@ -92,8 +92,10 @@ const getProductById = (id: string) => {
   },
 ]*/
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const product = getProductById(params.id)
+export default async function ProductPage({ params }: {  params: Promise<{ slug: string }>
+ }) {
+  const { slug } = await params
+  const product = getProductById(slug)
 
   return (
     <div className="container px-4 py-6 md:px-6 md:py-8">
