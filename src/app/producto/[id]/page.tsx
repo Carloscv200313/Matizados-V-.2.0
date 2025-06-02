@@ -5,7 +5,7 @@ import { ChevronRight, Heart, Minus, Plus, Share2, ShoppingCart, Star, Truck } f
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ProductCard } from "@/components/product-card"
+//import { ProductCard } from "@/components/product-card"
 import { Badge } from "@/components/ui/badge"
 
 // Simulación de datos de producto
@@ -49,7 +49,7 @@ const getProductById = (id: string) => {
 }
 
 // Productos relacionados
-const relatedProducts = [
+/*const relatedProducts = [
   {
     id: "101",
     name: "Pintura Epóxica para Pisos Gris",
@@ -90,7 +90,7 @@ const relatedProducts = [
     brand: "Proton",
     category: "industrial",
   },
-]
+]*/
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const product = getProductById(params.id)
@@ -469,7 +469,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       <section className="mt-12">
         <h2 className="text-2xl font-bold mb-6">Productos relacionados</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {relatedProducts.map((product) => (
+          {/*relatedProducts.map((product) => (
             <ProductCard
               key={product.id}
               ID_PRODUCTO={product.id}
@@ -481,7 +481,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               ESTADO_PRODUCTO="Disponible"
               DESCRIPCION="Descripción breve del producto relacionado."
             />
-          ))}
+          ))*/}
         </div>
       </section>
     </div>
