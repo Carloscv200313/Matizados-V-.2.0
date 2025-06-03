@@ -144,7 +144,7 @@ export default function RegisterPage() {
       CODIGO_POSTAL: registrationData.codigoPostal,
     }
     console.log("Datos de registro:", cuerpo)
-    const response = await fetch("http://localhost:3001/api/auth/register", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

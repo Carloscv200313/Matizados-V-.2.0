@@ -12,9 +12,11 @@ interface User {
 interface DataUserContextType {
     user: User | null;
     setUser: (user: User | null) => void;
+    isInitialized?: boolean; // Opcional, si necesitas saber si el estado ha sido inicializado
 }
 
 export const DataUser = createContext<DataUserContextType>({
     user: null,
     setUser: () => { },
+    isInitialized: false,
 });

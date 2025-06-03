@@ -122,7 +122,7 @@ export default function CategoryPage() {
                 }
 
                 const categoriaId = categoriaIdMap[slug] || 1
-                const response = await fetch(`http://localhost:3001/api/productos/listarProductos/${categoriaId}`)
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/productos/listarProductos/${categoriaId}`)
 
                 if (!response.ok) {
                     throw new Error('Error al obtener los productos de la categoría')
@@ -204,7 +204,7 @@ export default function CategoryPage() {
     }
 
     return (
-        <div className="flex flex-col py-6 md:px-6 md:py-8">
+        <div className="flex flex-col py-6 px-6">
             {/* Banner de categoría */}
             <div className="relative rounded-lg overflow-hidden mb-8 animate-fade-in h-64 md:h-80">
                 <div className="absolute inset-0 z-0">

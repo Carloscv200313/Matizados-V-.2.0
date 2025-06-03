@@ -21,7 +21,7 @@ export default function Home() {
   useEffect(() => {
     const ObtenerProductos = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/productos/listarProductos')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/productos/listarProductos`)
         if (!response.ok) {
           throw new Error('Error al obtener los productos')
         }

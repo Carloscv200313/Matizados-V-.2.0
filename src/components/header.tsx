@@ -1,10 +1,8 @@
 "use client"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, ShoppingCart, User, Menu, ChevronDown, X } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,9 +12,19 @@ import { useDataUser } from "@/Provider/Provider.User"
 
 export function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const {user, setUser} = useDataUser()
+  const { user, setUser, isInitialized } = useDataUser()
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  const CerrarSesion = () => {
+    setUser(null)
+    localStorage.removeItem("user")
+  }
 
   const categories = [
     { name: "Para decoraciones", href: "/categoria/decoraciones" },
@@ -32,6 +40,35 @@ export function Header() {
     { name: "LOSARO", href: "/marca/losaro" }
   ]
 
+  // Mostrar estado de carga mientras no esté montado
+  if (!isMounted || !isInitialized) {
+    return (
+      <header className="ferreteria-header sticky top-0 z-50 shadow-lg">
+        <div className="container flex gap-8 h-16 items-center justify-between px-4 md:px-6">
+          <div className="flex items-center gap-4 md:gap-8">
+            <Button variant="ghost" size="icon" className="md:hidden text-white opacity-0">
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+              <Image
+                src="/logoCompletoHorizontal-02.png"
+                alt="Matizados Saturno"
+                width={150}
+                height={50}
+                className="h-12 w-auto"
+              />
+            </Link>
+          </div>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <div className="relative">
+              <ShoppingCart className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
+      </header>
+    )
+  }
   return (
     <header className="ferreteria-header sticky top-0 z-50 shadow-lg">
       {/* Mobile Search Bar (when activated) */}
@@ -73,11 +110,11 @@ export function Header() {
               <div className="flex flex-col h-full py-4">
                 <div className="mb-6 px-4">
                   <Link href="/" className="flex items-center gap-2">
-                    <Image 
-                      src="/logoCompletoHorizontal-02.png" 
-                      alt="Matizados Saturno" 
-                      width={150} 
-                      height={50} 
+                    <Image
+                      src="/logoCompletoHorizontal-02.png"
+                      alt="Matizados Saturno"
+                      width={150}
+                      height={50}
                       className="h-10 w-auto"
                     />
                   </Link>
@@ -150,7 +187,7 @@ export function Header() {
                         Mis Pedidos
                       </Link>
                       <button
-                        onClick={() => setUser(null)}
+                        onClick={CerrarSesion}
                         className="block w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                       >
                         Cerrar Sesión
@@ -178,12 +215,12 @@ export function Header() {
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <Image 
-              src="/logoCompletoHorizontal-02.png" 
-              alt="Matizados Saturno" 
-              width={150} 
-              height={50} 
-              className="h-12 w-auto" 
+            <Image
+              src="/logoCompletoHorizontal-02.png"
+              alt="Matizados Saturno"
+              width={150}
+              height={50}
+              className="h-12 w-auto"
             />
           </Link>
         </div>
@@ -193,7 +230,7 @@ export function Header() {
           <Link href="/productos" className="nav-link py-2 font-medium">
             Catálogo
           </Link>
-          
+
           <div className="relative group">
             <button className="nav-link flex items-center gap-1 py-2 font-medium">
               Categorías
@@ -211,7 +248,7 @@ export function Header() {
               ))}
             </div>
           </div>
-          
+
           <div className="relative group">
             <button className="nav-link flex items-center gap-1 py-2 font-medium">
               Marcas
@@ -229,7 +266,7 @@ export function Header() {
               ))}
             </div>
           </div>
-          
+
           <Link href="/servicios" className="nav-link py-2 font-medium">
             Servicios
           </Link>
@@ -258,9 +295,9 @@ export function Header() {
         {/* User Actions */}
         <div className="flex items-center gap-4">
           {/* Mobile Search Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="md:hidden text-white"
             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
           >
@@ -274,14 +311,10 @@ export function Header() {
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             >
               <User className="h-5 w-5" />
-              {user ? (
-                <span>{user.NOMBRE_USUARIO}</span>
-              ) : (
-                <span>Iniciar sesión</span>
-              )}
+              <span>{user ? user.NOMBRE_USUARIO : "Iniciar sesión"}</span>
             </button>
             {isUserMenuOpen && (
-              <div 
+              <div
                 className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md p-2 z-50 shadow-lg"
                 onMouseLeave={() => setIsUserMenuOpen(false)}
               >
@@ -304,7 +337,7 @@ export function Header() {
                     <button
                       className="block w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors text-red-600 dark:text-red-400"
                       onClick={() => {
-                        setUser(null)
+                        CerrarSesion()
                         setIsUserMenuOpen(false)
                       }}
                     >

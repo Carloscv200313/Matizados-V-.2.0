@@ -123,7 +123,7 @@ export default function BrandPage() {
                 }
                 
                 const brandId = brandIdMap[slug] || 1
-                const response = await fetch(`http://localhost:3001/api/productos/listarProductosMarca/${brandId}`)
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/productos/listarProductosMarca/${brandId}`)
                 
                 if (!response.ok) {
                     throw new Error('Error al obtener los productos de la marca')

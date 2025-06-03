@@ -72,7 +72,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const ObtenerProductos = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/productos/listarProductos')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/productos/listarProductos`)
         if (!response.ok) {
           throw new Error('Error al obtener los productos')
         }
@@ -322,7 +322,7 @@ export default function ProductsPage() {
               <p className="text-primary animate-pulse">Cargando productos...</p>
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up px-2">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.ID_PRODUCTO}
