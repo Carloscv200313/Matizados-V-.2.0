@@ -1,6 +1,5 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ShoppingCart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
@@ -69,8 +68,7 @@ export function ProductCard({
             size="sm"
             className="w-full gap-2 bg-gradient-to-r from-[#3b82f6] to-[#f97316] hover:from-[#2563eb] hover:to-[#ea580c] text-white"
           >
-            <ShoppingCart className="h-4 w-4" />
-            Añadir
+            Ver Producto
           </Button>
         </div>
       </div>

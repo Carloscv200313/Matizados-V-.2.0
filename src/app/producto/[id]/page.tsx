@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
+import { useDataProductos } from "@/Provider/Provider.Carrito"
+
+// Dentro del componente
 
 interface Product {
   ID_PRODUCTO: number
@@ -30,12 +33,13 @@ interface Color {
 }
 
 export default function ProductPage() {
+  const {productos,setProductos} = useDataProductos()
   const [product, setProduct] = useState<Product>()
   const [colores, setColores] = useState<Color[]>([])
   const [colorSeleccionado, setColorSeleccionado] = useState<Color | null>(null)
   const [cantidad, setCantidad] = useState<number>(1)
   const [mostrarTodosLosColores, setMostrarTodosLosColores] = useState(false)
-
+  const router = useRouter();
   const coloresVisibles = mostrarTodosLosColores ? colores : colores.slice(0, 15)
   const params = useParams()
   const { id } = params
@@ -67,32 +71,30 @@ export default function ProductPage() {
     ObtenerColoresProducto()
   }, [id])
 
-  const agregarAlCarrito = () => {
-    if (!product || !colorSeleccionado) {
-      alert("Selecciona un color antes de continuar.")
-      return
-    }
-
-    const itemCarrito = {
-      id: product.ID_PRODUCTO,
-      nombre: product.NOMBRE_PRODUCTO,
-      precio: product.PRECIO_PRODUCTO,
-      color: colorSeleccionado,
-      cantidad: cantidad,
-      imagen: product.LOGO_PRODUCTO
-    }
-
-    const carritoExistente = JSON.parse(localStorage.getItem("carrito") || "[]")
-    carritoExistente.push(itemCarrito)
-    localStorage.setItem("carrito", JSON.stringify(carritoExistente))
-
-    alert("Producto añadido al carrito.")
+const agregarAlCarrito = () => {
+  if (!product || !colorSeleccionado) {
+    alert("Selecciona un color antes de continuar.")
+    return
   }
-
+  
+  const itemCarrito = {
+    id: product.ID_PRODUCTO,
+    nombre: product.NOMBRE_PRODUCTO,
+    precio: product.PRECIO_PRODUCTO,
+    color: colorSeleccionado,
+    cantidad: cantidad,
+  }
+  
+  // Corrección: spread correcto de los productos existentes
+  setProductos([...(productos ?? []), itemCarrito])
+  
+  // Usa router.push en lugar de redirect si quieres navegar después
+  router.push("/productos")
+}
   return (
     <div className="flex flex-col px-4 py-6 md:px-6 md:py-8">
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-4">
+        <div>
           <div className="aspect-square relative border rounded-lg overflow-hidden bg-background">
             <Image
               src={"/logo.png"}

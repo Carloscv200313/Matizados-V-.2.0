@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useDataUser } from "@/Provider/Provider.User"
+import { redirect } from "next/navigation"
+import { useDataProductos } from "@/Provider/Provider.Carrito"
 
 export function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
@@ -16,7 +18,7 @@ export function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [isMounted, setIsMounted] = useState(false)
-
+  const { productos } = useDataProductos()
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -24,6 +26,7 @@ export function Header() {
   const CerrarSesion = () => {
     setUser(null)
     localStorage.removeItem("user")
+    redirect("/auth/login")
   }
 
   const categories = [
@@ -180,12 +183,6 @@ export function Header() {
                       >
                         Mi Perfil
                       </Link>
-                      <Link
-                        href="/pedidos"
-                        className="block px-3 py-2 rounded-md hover:bg-[#eff6ff] dark:hover:bg-[#1e3a8a]/20"
-                      >
-                        Mis Pedidos
-                      </Link>
                       <button
                         onClick={CerrarSesion}
                         className="block w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
@@ -327,13 +324,6 @@ export function Header() {
                     >
                       Mi Perfil
                     </Link>
-                    <Link
-                      href="/pedidos"
-                      className="block px-3 py-2 hover:bg-[#eff6ff] dark:hover:bg-[#1e3a8a]/20 rounded-md transition-colors text-[#111827] dark:text-[#f3f4f6]"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Mis Pedidos
-                    </Link>
                     <button
                       className="block w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors text-red-600 dark:text-red-400"
                       onClick={() => {
@@ -376,7 +366,7 @@ export function Header() {
               className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center badge-naranja"
               variant="outline"
             >
-              3
+              {productos?.length || 0}
             </Badge>
           </Link>
         </div>

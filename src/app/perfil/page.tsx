@@ -32,7 +32,7 @@ export default function ProfilePage() {
   const { user, setUser } = useDataUser()
   const [ventasUser, setVentasUser] = useState<VentasUser[]>([])
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null)
-  
+
   useEffect(() => {
     if (user) {
       const fetchVentas = async () => {
@@ -64,17 +64,17 @@ export default function ProfilePage() {
 
   const parseDetalleProductos = (detalleString: string): Producto[] => {
     if (!detalleString) return [];
-    
+
     try {
       const productosArray = detalleString.split('\n\n').filter(item => item.trim() !== '');
-      
+
       return productosArray.map(productoStr => {
         const lineas = productoStr.split('\n').filter(linea => linea.trim() !== '');
-        
+
         if (lineas.length >= 2) {
           const nombreProducto = lineas[0].trim();
           const cantidadPrecioMatch = lineas[1].match(/Cantidad:\s*(\d+)\s*×\s*\$\s*([\d.]+)/);
-          
+
           if (cantidadPrecioMatch) {
             return {
               id: Math.random().toString(36).substr(2, 9),
@@ -143,7 +143,7 @@ export default function ProfilePage() {
       }
 
       const toastId = toast.loading("Actualizando información...")
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/${endpoint}/${user.ID_USUARIO}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -176,7 +176,7 @@ export default function ProfilePage() {
     setIsUpdating(true)
     try {
       const toastId = toast.loading("Actualizando dirección...")
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/cambiarDireccion/${user.ID_USUARIO}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -216,7 +216,7 @@ export default function ProfilePage() {
     setIsUpdating(true)
     try {
       const toastId = toast.loading("Actualizando contraseña...")
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/cambiarContrasena/${user.ID_USUARIO}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -242,7 +242,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col px-4 py-6 md:px-6 md:py-8">
-      <div className="w-full mx-auto">
+      <div className="w-2/3 mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xl font-bold">
             {user?.NOMBRE_USUARIO && (() => {
@@ -297,9 +297,9 @@ export default function ProfilePage() {
                         >
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => setEditingField(null)}
                           disabled={isUpdating}
                         >
@@ -311,9 +311,9 @@ export default function ProfilePage() {
                     )}
                   </div>
                   {editingField !== "NombreCompleto" && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditingField("NombreCompleto")}
                       disabled={isUpdating}
                     >
@@ -362,9 +362,9 @@ export default function ProfilePage() {
                         >
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => setEditingField(null)}
                           disabled={isUpdating}
                         >
@@ -376,9 +376,9 @@ export default function ProfilePage() {
                     )}
                   </div>
                   {editingField !== "phone" && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditingField("phone")}
                       disabled={isUpdating}
                     >
@@ -548,7 +548,20 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold mb-2">Mis Compras</h2>
               <p className="text-muted-foreground">Historial de tus pedidos y su estado actual</p>
             </div>
-
+            {
+              ventasUser.length === 0 && (
+                <Card className="flex flex-col items-center justify-center">
+                  <Package className="h-16 w-16 text-muted-foreground" />
+                  <p className="text-lg font-medium text-muted-foreground">No tienes compras registradas</p>
+                  <p className="text-sm text-muted-foreground text-center max-w-md">
+                    Cuando realices tu primera compra, aparecerá aquí tu historial de pedidos.
+                  </p>
+                  <Button variant="outline" className="mt-4">
+                    Ver catálogo de productos
+                  </Button>
+                </Card>
+              )
+            }
             <div className="space-y-4">
               {ventasUser.map((order) => (
                 <Card key={order.ID_PEDIDO}>
@@ -575,18 +588,13 @@ export default function ProfilePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex justify-between items-center">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => toggleOrderExpansion(order.ID_PEDIDO)}
                       >
                         {expandedOrder === order.ID_PEDIDO ? 'Ocultar Detalles' : 'Ver Detalles'}
                       </Button>
-                      {order.Estado === "ENTREGADO" && (
-                        <Button variant="outline" size="sm">
-                          Volver a Comprar
-                        </Button>
-                      )}
                     </div>
                     <Separator className="my-4" />
                     {expandedOrder === order.ID_PEDIDO && (

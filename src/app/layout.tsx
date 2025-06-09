@@ -7,6 +7,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { DataUserProvider } from "@/Provider/Provider.User"
 import { Toaster } from "@/components/ui/sonner"
+import { DataProductosProvider } from "@/Provider/Provider.Carrito"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,14 +24,16 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
-        <DataUserProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <Header />
-          {children}
-          <Toaster />
-          <Footer />
-        </ThemeProvider>
-        </DataUserProvider>
+        <DataProductosProvider>
+          <DataUserProvider>
+            <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+              <Header />
+              {children}
+              <Toaster />
+              <Footer />
+            </ThemeProvider>
+          </DataUserProvider>
+        </DataProductosProvider>
       </body>
     </html>
   )
