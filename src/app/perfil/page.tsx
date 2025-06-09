@@ -1,9 +1,6 @@
 "use client"
-
-import { useState } from "react"
-import Link from "next/link"
-import { ChevronRight, Edit, Eye, EyeOff, MapPin, Package, Plus, Save, User, X } from "lucide-react"
-
+import { useEffect, useState } from "react"
+import { Edit, Eye, EyeOff, Package, Save, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,251 +8,261 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { useDataUser } from "@/Provider/Provider.User"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { toast } from "sonner"
 
-interface UserData {
-  firstName: string
-  lastName: string
-  email: string
-  dni: string
-  phone: string
-  addresses: Address[]
+interface Producto {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
 }
 
-interface Address {
-  id: string
-  name: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  isDefault: boolean
-}
-
-interface Order {
-  id: string
-  date: string
-  total: number
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-  items: OrderItem[]
-}
-
-interface OrderItem {
-  id: string
-  name: string
-  quantity: number
-  price: number
-  image: string
+interface VentasUser {
+  ID_PEDIDO: number;
+  Pedido: string;
+  FechaPedido: string;
+  Estado: string;
+  Total: number;
+  DetalleProductos: string;
 }
 
 export default function ProfilePage() {
-  const [userData, setUserData] = useState<UserData>({
-    firstName: "Juan",
-    lastName: "Pérez",
-    email: "juan.perez@email.com",
-    dni: "12345678",
-    phone: "+51 999 999 999",
-    addresses: [
-      {
-        id: "1",
-        name: "Casa",
-        address: "Av. Principal 123",
-        city: "Lima",
-        state: "Lima",
-        zipCode: "15001",
-        isDefault: true,
-      },
-      {
-        id: "2",
-        name: "Trabajo",
-        address: "Jr. Comercio 456",
-        city: "Lima",
-        state: "Lima",
-        zipCode: "15002",
-        isDefault: false,
-      },
-    ],
-  })
-
-  const [orders] = useState<Order[]>([
-    {
-      id: "ORD-001",
-      date: "2024-01-15",
-      total: 89.97,
-      status: "delivered",
-      items: [
-        {
-          id: "1",
-          name: "Pintura Sintética Proton SyntoRust Negro",
-          quantity: 2,
-          price: 29.99,
-          image: "/placeholder.svg?height=80&width=80&text=Proton",
-        },
-        {
-          id: "2",
-          name: "Pintura Látex Premium Satinado Blanco",
-          quantity: 1,
-          price: 29.99,
-          image: "/placeholder.svg?height=80&width=80&text=Látex",
-        },
-      ],
-    },
-    {
-      id: "ORD-002",
-      date: "2024-01-20",
-      total: 34.99,
-      status: "shipped",
-      items: [
-        {
-          id: "3",
-          name: "Esmalte Automotriz Azul Metálico",
-          quantity: 1,
-          price: 34.99,
-          image: "/placeholder.svg?height=80&width=80&text=Esmalte",
-        },
-      ],
-    },
-    {
-      id: "ORD-003",
-      date: "2024-01-25",
-      total: 27.99,
-      status: "processing",
-      items: [
-        {
-          id: "4",
-          name: "Barniz Marino Protector UV",
-          quantity: 1,
-          price: 27.99,
-          image: "/placeholder.svg?height=80&width=80&text=Barniz",
-        },
-      ],
-    },
-  ])
+  const { user, setUser } = useDataUser()
+  const [ventasUser, setVentasUser] = useState<VentasUser[]>([])
+  const [expandedOrder, setExpandedOrder] = useState<number | null>(null)
+  
+  useEffect(() => {
+    if (user) {
+      const fetchVentas = async () => {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/ventas/${user?.ID_USUARIO}`)
+          const data = await response.json()
+          setVentasUser(data)
+        } catch (error) {
+          console.error("Error al obtener ventas:", error)
+          toast.error("No se pudieron cargar tus compras")
+        }
+      }
+      fetchVentas()
+    }
+  }, [user])
 
   const [editingField, setEditingField] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [isAddingAddress, setIsAddingAddress] = useState(false)
-  const [newAddress, setNewAddress] = useState<Omit<Address, "id">>({
-    name: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    isDefault: false,
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [addressForm, setAddressForm] = useState({
+    address: user?.DIRECCION_DETALLE || '',
+    department: user?.DEPARTAMENTO || '',
+    district: user?.DISTRITO || '',
+    postalCode: user?.CODIGO_POSTAL || ''
   })
 
-  const handleSaveField = (field: keyof UserData, value: string) => {
-    setUserData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-    setEditingField(null)
-  }
-
-  const handleAddAddress = () => {
-    const address: Address = {
-      ...newAddress,
-      id: Date.now().toString(),
+  const parseDetalleProductos = (detalleString: string): Producto[] => {
+    if (!detalleString) return [];
+    
+    try {
+      const productosArray = detalleString.split('\n\n').filter(item => item.trim() !== '');
+      
+      return productosArray.map(productoStr => {
+        const lineas = productoStr.split('\n').filter(linea => linea.trim() !== '');
+        
+        if (lineas.length >= 2) {
+          const nombreProducto = lineas[0].trim();
+          const cantidadPrecioMatch = lineas[1].match(/Cantidad:\s*(\d+)\s*×\s*\$\s*([\d.]+)/);
+          
+          if (cantidadPrecioMatch) {
+            return {
+              id: Math.random().toString(36).substr(2, 9),
+              name: nombreProducto,
+              quantity: parseInt(cantidadPrecioMatch[1]),
+              price: parseFloat(cantidadPrecioMatch[2])
+            };
+          }
+        }
+        return null;
+      }).filter((producto): producto is Producto => producto !== null);
+    } catch (error) {
+      console.error('Error parsing product details:', error);
+      return [];
     }
-    setUserData((prev) => ({
-      ...prev,
-      addresses: [...prev.addresses, address],
-    }))
-    setNewAddress({
-      name: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      isDefault: false,
-    })
-    setIsAddingAddress(false)
-  }
+  };
 
-  const handleRemoveAddress = (addressId: string) => {
-    setUserData((prev) => ({
-      ...prev,
-      addresses: prev.addresses.filter((addr) => addr.id !== addressId),
-    }))
-  }
-
-  const getStatusColor = (status: Order["status"]) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "processing":
-        return "bg-blue-100 text-blue-800"
-      case "shipped":
-        return "bg-purple-100 text-purple-800"
-      case "delivered":
-        return "bg-green-100 text-green-800"
-      case "cancelled":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+      case "PAGADO": return "bg-yellow-100 text-yellow-800"
+      case "EN PROCESO": return "bg-blue-100 text-blue-800"
+      case "CANCELADO": return "bg-red-100 text-red-800"
+      case "ENTREGADO": return "bg-green-100 text-green-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getStatusText = (status: Order["status"]) => {
+  const getStatusText = (status: string) => {
     switch (status) {
-      case "pending":
-        return "Pendiente"
-      case "processing":
-        return "Procesando"
-      case "shipped":
-        return "Enviado"
-      case "delivered":
-        return "Entregado"
-      case "cancelled":
-        return "Cancelado"
-      default:
-        return "Desconocido"
+      case "PAGADO": return "Pendiente"
+      case "EN PROCESO": return "Procesando"
+      case "CANCELADO": return "Cancelado"
+      case "ENTREGADO": return "Entregado"
+      default: return status
+    }
+  }
+
+  const toggleOrderExpansion = (orderId: number) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setAddressForm(prev => ({ ...prev, [name]: value }))
+  }
+
+  const updateUserField = async (field: string, value: string) => {
+    if (!user) return;
+
+    setIsUpdating(true)
+    try {
+      let endpoint = ''
+      let body = {}
+
+      switch (field) {
+        case 'NombreCompleto':
+          endpoint = 'cambiarNombre'
+          body = { nuevo_nombre: value }
+          break
+        case 'phone':
+          endpoint = 'cambiarTelefono'
+          body = { nuevo_telefono: value }
+          break
+        default:
+          throw new Error('Campo no válido')
+      }
+
+      const toastId = toast.loading("Actualizando información...")
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/${endpoint}/${user.ID_USUARIO}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar')
+      }
+
+      setUser({
+        ...user,
+        ...(field === 'NombreCompleto' && { NOMBRE_USUARIO: value }),
+        ...(field === 'phone' && { TELEFONO_USUARIO: value })
+      })
+
+      toast.success("Información actualizada correctamente", { id: toastId })
+    } catch (error) {
+      console.error(`Error al actualizar ${field}:`, error)
+      toast.error("No se pudo actualizar la información")
+    } finally {
+      setIsUpdating(false)
+      setEditingField(null)
+    }
+  }
+
+  const updateAddress = async () => {
+    if (!user) return;
+
+    setIsUpdating(true)
+    try {
+      const toastId = toast.loading("Actualizando dirección...")
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/cambiarDireccion/${user.ID_USUARIO}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          direccion: addressForm.address,
+          departamento: addressForm.department,
+          distrito: addressForm.district,
+          codigo_postal: addressForm.postalCode
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar la dirección')
+      }
+
+      setUser({
+        ...user,
+        DIRECCION_DETALLE: addressForm.address,
+        DEPARTAMENTO: addressForm.department,
+        DISTRITO: addressForm.district,
+        CODIGO_POSTAL: addressForm.postalCode
+      })
+
+      setModalOpen(false)
+      toast.success("Dirección actualizada correctamente", { id: toastId })
+    } catch (error) {
+      console.error("Error al actualizar dirección:", error)
+      toast.error("No se pudo actualizar la dirección")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const changePassword = async () => {
+    if (!user || newPassword !== confirmPassword) return;
+
+    setIsUpdating(true)
+    try {
+      const toastId = toast.loading("Actualizando contraseña...")
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND}/api/user/cambiarContrasena/${user.ID_USUARIO}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nueva_contrasena: newPassword
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al cambiar la contraseña')
+      }
+
+      setNewPassword("")
+      setConfirmPassword("")
+      toast.success("Contraseña actualizada correctamente", { id: toastId })
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error)
+      toast.error("No se pudo cambiar la contraseña")
+    } finally {
+      setIsUpdating(false)
     }
   }
 
   return (
-    <div className="container px-4 py-6 md:px-6 md:py-8">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center text-sm mb-6">
-        <Link href="/" className="text-muted-foreground hover:text-foreground">
-          Inicio
-        </Link>
-        <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" />
-        <span className="font-medium">Mi Perfil</span>
-      </nav>
-
-      <div className="max-w-4xl mx-auto">
+    <div className="flex flex-col px-4 py-6 md:px-6 md:py-8">
+      <div className="w-full mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xl font-bold">
-            {userData.firstName.charAt(0)}
-            {userData.lastName.charAt(0)}
+            {user?.NOMBRE_USUARIO && (() => {
+              const partes = user.NOMBRE_USUARIO.trim().split(" ");
+              const inicialNombre = partes[0]?.charAt(0).toUpperCase() || "";
+              const inicialApellido = partes[2]?.charAt(0).toUpperCase() || "";
+              return inicialNombre + inicialApellido;
+            })()}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">
-              {userData.firstName} {userData.lastName}
-            </h1>
-            <p className="text-muted-foreground">{userData.email}</p>
+            <h1 className="text-2xl font-bold">{user?.NOMBRE_USUARIO}</h1>
+            <p className="text-muted-foreground">{user?.CORREO_USUARIO}</p>
           </div>
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Perfil
-            </TabsTrigger>
-            <TabsTrigger value="addresses" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Direcciones
             </TabsTrigger>
             <TabsTrigger value="orders" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
@@ -276,88 +283,51 @@ export default function ProfilePage() {
                 {/* Nombre */}
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <Label>Nombre</Label>
-                    {editingField === "firstName" ? (
+                    <Label>Nombre Completo</Label>
+                    {editingField === "NombreCompleto" ? (
                       <div className="flex items-center gap-2 mt-1">
-                        <Input
-                          defaultValue={userData.firstName}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleSaveField("firstName", e.currentTarget.value)
-                            }
-                          }}
-                        />
+                        <Input defaultValue={user?.NOMBRE_USUARIO} />
                         <Button
                           size="sm"
                           onClick={(e) => {
                             const input = e.currentTarget.parentElement?.querySelector("input")
-                            if (input) handleSaveField("firstName", input.value)
+                            if (input) updateUserField("NombreCompleto", input.value)
                           }}
+                          disabled={isUpdating}
                         >
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingField(null)}>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => setEditingField(null)}
+                          disabled={isUpdating}
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
                     ) : (
-                      <p className="mt-1">{userData.firstName}</p>
+                      <p className="mt-1">{user?.NOMBRE_USUARIO}</p>
                     )}
                   </div>
-                  {editingField !== "firstName" && (
-                    <Button variant="ghost" size="sm" onClick={() => setEditingField("firstName")}>
+                  {editingField !== "NombreCompleto" && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setEditingField("NombreCompleto")}
+                      disabled={isUpdating}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
-
-                <Separator />
-
-                {/* Apellido */}
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <Label>Apellido</Label>
-                    {editingField === "lastName" ? (
-                      <div className="flex items-center gap-2 mt-1">
-                        <Input
-                          defaultValue={userData.lastName}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleSaveField("lastName", e.currentTarget.value)
-                            }
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          onClick={(e) => {
-                            const input = e.currentTarget.parentElement?.querySelector("input")
-                            if (input) handleSaveField("lastName", input.value)
-                          }}
-                        >
-                          <Save className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingField(null)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <p className="mt-1">{userData.lastName}</p>
-                    )}
-                  </div>
-                  {editingField !== "lastName" && (
-                    <Button variant="ghost" size="sm" onClick={() => setEditingField("lastName")}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-
                 <Separator />
 
                 {/* Email - No editable */}
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <Label>Correo electrónico *</Label>
-                    <p className="mt-1 text-muted-foreground">{userData.email}</p>
+                    <p className="mt-1 text-muted-foreground">{user?.CORREO_USUARIO}</p>
                     <p className="text-xs text-muted-foreground">Este campo no puede ser modificado</p>
                   </div>
                 </div>
@@ -368,7 +338,7 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <Label>DNI *</Label>
-                    <p className="mt-1 text-muted-foreground">{userData.dni}</p>
+                    <p className="mt-1 text-muted-foreground">{user?.DNI_USUARIO}</p>
                     <p className="text-xs text-muted-foreground">Este campo no puede ser modificado</p>
                   </div>
                 </div>
@@ -381,36 +351,142 @@ export default function ProfilePage() {
                     <Label>Teléfono</Label>
                     {editingField === "phone" ? (
                       <div className="flex items-center gap-2 mt-1">
-                        <Input
-                          defaultValue={userData.phone}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleSaveField("phone", e.currentTarget.value)
-                            }
-                          }}
-                        />
+                        <Input defaultValue={user?.TELEFONO_USUARIO} />
                         <Button
                           size="sm"
                           onClick={(e) => {
                             const input = e.currentTarget.parentElement?.querySelector("input")
-                            if (input) handleSaveField("phone", input.value)
+                            if (input) updateUserField("phone", input.value)
                           }}
+                          disabled={isUpdating}
                         >
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingField(null)}>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => setEditingField(null)}
+                          disabled={isUpdating}
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
                     ) : (
-                      <p className="mt-1">{userData.phone}</p>
+                      <p className="mt-1">{user?.TELEFONO_USUARIO}</p>
                     )}
                   </div>
                   {editingField !== "phone" && (
-                    <Button variant="ghost" size="sm" onClick={() => setEditingField("phone")}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setEditingField("phone")}
+                      disabled={isUpdating}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Dirección */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Dirección</CardTitle>
+                    <CardDescription>Información de tu ubicación</CardDescription>
+                  </div>
+                  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" disabled={isUpdating}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar toda la dirección
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>Editar dirección completa</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="address">Dirección</Label>
+                          <Input
+                            id="address"
+                            name="address"
+                            value={addressForm.address}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="department">Departamento</Label>
+                            <Input
+                              id="department"
+                              name="department"
+                              value={addressForm.department}
+                              onChange={handleInputChange}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="district">Distrito</Label>
+                            <Input
+                              id="district"
+                              name="district"
+                              value={addressForm.district}
+                              onChange={handleInputChange}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="postalCode">Código Postal</Label>
+                          <Input
+                            id="postalCode"
+                            name="postalCode"
+                            value={addressForm.postalCode}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setModalOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={updateAddress} disabled={isUpdating}>
+                          {isUpdating ? "Guardando..." : "Guardar cambios"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label>Dirección</Label>
+                    <p className="mt-1">{user?.DIRECCION_DETALLE}</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label>Departamento</Label>
+                    <p className="mt-1">{user?.DEPARTAMENTO}</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label>Distrito</Label>
+                    <p className="mt-1">{user?.DISTRITO}</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Label>Código Postal</Label>
+                    <p className="mt-1">{user?.CODIGO_POSTAL}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -457,141 +533,13 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <Button
-                  disabled={!newPassword || !confirmPassword || newPassword !== confirmPassword}
-                  onClick={() => {
-                    // Aquí iría la lógica para cambiar la contraseña
-                    setNewPassword("")
-                    setConfirmPassword("")
-                  }}
+                  disabled={!newPassword || !confirmPassword || newPassword !== confirmPassword || isUpdating}
+                  onClick={changePassword}
                 >
-                  Cambiar Contraseña
+                  {isUpdating ? "Procesando..." : "Cambiar Contraseña"}
                 </Button>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Direcciones Tab */}
-          <TabsContent value="addresses" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">Mis Direcciones</h2>
-                <p className="text-muted-foreground">Gestiona tus direcciones de envío</p>
-              </div>
-              <Dialog open={isAddingAddress} onOpenChange={setIsAddingAddress}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Añadir Dirección
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Añadir Nueva Dirección</DialogTitle>
-                    <DialogDescription>Completa los datos de tu nueva dirección de envío</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="address-name">Nombre de la dirección</Label>
-                      <Input
-                        id="address-name"
-                        placeholder="Casa, Trabajo, etc."
-                        value={newAddress.name}
-                        onChange={(e) => setNewAddress((prev) => ({ ...prev, name: e.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address-street">Dirección</Label>
-                      <Input
-                        id="address-street"
-                        placeholder="Av. Principal 123"
-                        value={newAddress.address}
-                        onChange={(e) => setNewAddress((prev) => ({ ...prev, address: e.target.value }))}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="address-city">Ciudad</Label>
-                        <Input
-                          id="address-city"
-                          placeholder="Lima"
-                          value={newAddress.city}
-                          onChange={(e) => setNewAddress((prev) => ({ ...prev, city: e.target.value }))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="address-state">Departamento</Label>
-                        <Input
-                          id="address-state"
-                          placeholder="Lima"
-                          value={newAddress.state}
-                          onChange={(e) => setNewAddress((prev) => ({ ...prev, state: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address-zip">Código Postal</Label>
-                      <Input
-                        id="address-zip"
-                        placeholder="15001"
-                        value={newAddress.zipCode}
-                        onChange={(e) => setNewAddress((prev) => ({ ...prev, zipCode: e.target.value }))}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setIsAddingAddress(false)}>
-                        Cancelar
-                      </Button>
-                      <Button
-                        onClick={handleAddAddress}
-                        disabled={
-                          !newAddress.name ||
-                          !newAddress.address ||
-                          !newAddress.city ||
-                          !newAddress.state ||
-                          !newAddress.zipCode
-                        }
-                      >
-                        Añadir Dirección
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid gap-4">
-              {userData.addresses.map((address) => (
-                <Card key={address.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium">{address.name}</h3>
-                          {address.isDefault && <Badge variant="secondary">Predeterminada</Badge>}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{address.address}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {address.city}, {address.state} {address.zipCode}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveAddress(address.id)}
-                          disabled={address.isDefault}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </TabsContent>
 
           {/* Compras Tab */}
@@ -602,15 +550,15 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-4">
-              {orders.map((order) => (
-                <Card key={order.id}>
+              {ventasUser.map((order) => (
+                <Card key={order.ID_PEDIDO}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-lg">Pedido {order.id}</CardTitle>
+                        <CardTitle className="text-lg">Pedido {order.Pedido}</CardTitle>
                         <CardDescription>
                           Realizado el{" "}
-                          {new Date(order.date).toLocaleDateString("es-ES", {
+                          {new Date(order.FechaPedido).toLocaleDateString("es-ES", {
                             year: "numeric",
                             month: "long",
                             day: "numeric",
@@ -618,41 +566,51 @@ export default function ProfilePage() {
                         </CardDescription>
                       </div>
                       <div className="text-right">
-                        <Badge className={getStatusColor(order.status)}>{getStatusText(order.status)}</Badge>
-                        <p className="text-lg font-bold mt-1">${order.total.toFixed(2)}</p>
+                        <Badge className={getStatusColor(order.Estado)}>
+                          {getStatusText(order.Estado)}
+                        </Badge>
+                        <p className="text-lg font-bold mt-1">${order.Total.toFixed(2)}</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                            <Package className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium">{item.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Cantidad: {item.quantity} × ${item.price.toFixed(2)}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">${(item.quantity * item.price).toFixed(2)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <Separator className="my-4" />
                     <div className="flex justify-between items-center">
-                      <Button variant="outline" size="sm">
-                        Ver Detalles
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toggleOrderExpansion(order.ID_PEDIDO)}
+                      >
+                        {expandedOrder === order.ID_PEDIDO ? 'Ocultar Detalles' : 'Ver Detalles'}
                       </Button>
-                      {order.status === "delivered" && (
+                      {order.Estado === "ENTREGADO" && (
                         <Button variant="outline" size="sm">
                           Volver a Comprar
                         </Button>
                       )}
                     </div>
+                    <Separator className="my-4" />
+                    {expandedOrder === order.ID_PEDIDO && (
+                      <div className="space-y-3">
+                        {parseDetalleProductos(order.DetalleProductos).map((item) => (
+                          <div key={item.id} className="flex items-center gap-4">
+                            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                              <Package className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium">{item.name}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Cantidad: {item.quantity} × ${item.price.toFixed(2)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">
+                                ${(item.quantity * item.price).toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

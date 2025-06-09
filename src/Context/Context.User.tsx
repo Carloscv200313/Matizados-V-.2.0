@@ -7,6 +7,10 @@ interface User {
     CORREO_USUARIO: string;
     DNI_USUARIO: string;
     TELEFONO_USUARIO: string;
+    DEPARTAMENTO: string;
+    DIRECCION_DETALLE: string;
+    DISTRITO: string;
+    CODIGO_POSTAL: string;
 }
 
 interface DataUserContextType {
