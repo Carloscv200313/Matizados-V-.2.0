@@ -221,6 +221,11 @@ export default function CartPage() {
                 <div className="text-xs text-center text-muted-foreground">
                   Impuestos incluidos. El envío se calcula en el pago.
                 </div>
+                {user?.ID_USUARIO === undefined || user?.ID_USUARIO === null ? (
+                  <div className="text-red-500 text-xs text-center">
+                    Debes iniciar sesión para realizar una compra.
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -381,7 +386,7 @@ export default function CartPage() {
             <Button variant="outline" onClick={closeModal}>
               Cancelar
             </Button>
-            <Button onClick={handleCheckout}>
+            <Button onClick={handleCheckout} disabled= {user?.ID_USUARIO === undefined || user?.ID_USUARIO === null}>
               Confirmar Compra
             </Button>
           </DialogFooter>
