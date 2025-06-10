@@ -73,6 +73,7 @@ export default function CartPage() {
         ID_ENTREGA: tipoEntregaSeleccionado,
         PRODUCTOS: productos?.map(item => ({
           ID_PRODUCTO: item.id,
+          ID_COLOR: item.color?.ID_COLOR || null, 
           CANTIDAD: item.cantidad,
           PRECIO_UNID: item.precio,
           DESCUENTO_UNITARIO: 0
@@ -217,15 +218,16 @@ export default function CartPage() {
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
-                <Button className="w-full" onClick={openModal}>Proceder al pago</Button>
-                <div className="text-xs text-center text-muted-foreground">
-                  Impuestos incluidos. El envío se calcula en el pago.
-                </div>
                 {user?.ID_USUARIO === undefined || user?.ID_USUARIO === null ? (
                   <div className="text-red-500 text-xs text-center">
                     Debes iniciar sesión para realizar una compra.
                   </div>
                 ) : null}
+                <Button className="w-full" onClick={openModal} disabled={!user}>Proceder al pago</Button>
+                <div className="text-xs text-center text-muted-foreground">
+                  Impuestos incluidos. El envío se calcula en el pago.
+                </div>
+                
               </div>
             </div>
           </div>

@@ -176,7 +176,9 @@ export function Header() {
                 <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 px-2">
                   {user ? (
                     <div className="space-y-1">
-                      <div className="px-3 py-2 font-medium">{user.NOMBRE_USUARIO}</div>
+                      <div className="px-3 py-2 font-medium">
+                        {user.NOMBRE_USUARIO.split(" ").filter((_, index) => index === 0 || index === 2).join(" ")}
+                      </div>
                       <Link
                         href="/perfil"
                         className="block px-3 py-2 rounded-md hover:bg-[#eff6ff] dark:hover:bg-[#1e3a8a]/20"
@@ -304,11 +306,11 @@ export function Header() {
           {/* User Menu - Desktop */}
           <div className="hidden md:flex relative cursor-pointer">
             <button
-              className="nav-link flex items-center gap-2 text-sm font-medium"
+              className="nav-link flex items-center gap-2 text-sm font-medium cursor-pointer"
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             >
               <User className="h-5 w-5" />
-              <span>{user ? user.NOMBRE_USUARIO : "Iniciar sesión"}</span>
+              <span>{user ? user.NOMBRE_USUARIO.split(" ").filter((_, index) => index === 0 || index === 2).join(" ") : "Iniciar sesión"}</span>
             </button>
             {isUserMenuOpen && (
               <div

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { useDataUser } from "@/Provider/Provider.User"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { redirect } from "next/navigation"
 
 interface Producto {
   id: string;
@@ -239,12 +240,14 @@ export default function ProfilePage() {
       setIsUpdating(false)
     }
   }
-
+  if(!user) {
+    redirect("/auth/login");
+  }
   return (
     <div className="flex flex-col px-4 py-6 md:px-6 md:py-8">
-      <div className="w-2/3 mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xl font-bold">
+      <div className="w-full md:w-2/3 mx-auto">
+        <div className="flex items-center gap-2 mb-8 w-full">
+          <div className=" w-20 h-16 md:w-16  bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xl font-bold">
             {user?.NOMBRE_USUARIO && (() => {
               const partes = user.NOMBRE_USUARIO.trim().split(" ");
               const inicialNombre = partes[0]?.charAt(0).toUpperCase() || "";
@@ -392,7 +395,7 @@ export default function ProfilePage() {
             {/* Dirección */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex md:flex-row flex-col justify-between gap-4 md:items-center">
                   <div>
                     <CardTitle>Dirección</CardTitle>
                     <CardDescription>Información de tu ubicación</CardDescription>
