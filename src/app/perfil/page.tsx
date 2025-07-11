@@ -240,7 +240,7 @@ export default function ProfilePage() {
       setIsUpdating(false)
     }
   }
-  if(!user) {
+  if (!user) {
     redirect("/auth/login");
   }
   return (
@@ -574,10 +574,14 @@ export default function ProfilePage() {
                         <CardTitle className="text-lg">Pedido {order.Pedido}</CardTitle>
                         <CardDescription>
                           Realizado el{" "}
-                          {new Date(order.FechaPedido).toLocaleDateString("es-ES", {
+                          {new Date(
+                            new Date(order.FechaPedido).setDate(
+                              new Date(order.FechaPedido).getDate() + 1
+                            )
+                          ).toLocaleDateString("es-ES", {
                             year: "numeric",
                             month: "long",
-                            day: "numeric",
+                            day: "numeric"
                           })}
                         </CardDescription>
                       </div>

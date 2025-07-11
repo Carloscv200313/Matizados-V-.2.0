@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useDataUser } from "@/Provider/Provider.User"
 import { redirect } from 'next/navigation'
 export default function LoginPage() {
-  const {setUser} = useDataUser()
+  const { setUser } = useDataUser()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -38,9 +38,11 @@ export default function LoginPage() {
       setUser(data.datos)
       //localStorage.setItem("user", JSON.stringify(data.datos))
       setIsLoading(false)
-      redirect('/')
+      if ( data.datos) {
+        redirect('/')
+      }
     }, 1500)
-}
+  }
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
@@ -148,7 +150,7 @@ export default function LoginPage() {
                   </Button>
                 </motion.div>
               </form>
-              
+
               {/* Register Link */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
